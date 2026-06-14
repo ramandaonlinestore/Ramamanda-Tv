@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Kontrol Ramanda Online Store By: Tota</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0c0c0c;
+            color: #ffffff;
+            padding-bottom: 90px;
+        }
+        .netflix-red { color: #E50914; }
+        .bg-netflix-red { background-color: #E50914; }
+        .bg-netflix-red:hover { background-color: #B81D24; }
+        .glass-card {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0c0c0c; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA5R4PdXgTrR6R5c6TBnoBaAeJjEbzxbE",
+            authDomain: "ramanda-tv.firebaseapp.com",
+            databaseURL: "https://ramanda-tv-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ramanda-tv",
+            storageBucket: "ramanda-tv.firebasestorage.app",
+            messagingSenderId: "215320121558",
+            appId: "1:215320121558:web:c64a2117816de7f76b7977"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <div id="pin-lock-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
+        <div class="glass-card w-full max-w-sm p-6 rounded-xl shadow-2xl text-center border-t-4 border-red-600">
+            <div class="w-12 h-12 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3 text-lg">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-base font-bold text-white mb-1">Keamanan Ekstra Panel Admin</h2>
+            <p class="text-gray-400 text-xs mb-5">Masukkan 6 digit angka PIN kontrol Anda</p>
+            
+            <div class="space-y-4">
+                <input type="password" id="admin-pin-input" maxlength="6" pattern="\d*" inputmode="numeric" placeholder="******" class="w-full bg-[#1c1c1c] border border-gray-800 rounded-lg p-3 text-center tracking-[1em] text-xl font-bold text-white outline-none focus:border-red-600 placeholder-gray-700">
+                <button onclick="validateAdminPin()" class="w-full bg-netflix-red text-white text-xs font-bold py-2.5 rounded-lg transition-all shadow-lg active:scale-95 tracking-wide">
+                    Buka Akses Panel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-main-content" class="hidden">
+        <header class="bg-[#141414] border-b border-gray-800 p-3 sticky top-0 z-40 text-center">
+            <h1 class="text-sm font-black tracking-widest uppercase">Panel Kontrol Ramanda Online Store By: Tota</h1>
+        </header>
+
+        <main class="max-w-2xl mx-auto p-4 space-y-5">
+
+            <section id="sec-pembayaran" class="content-section">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-receipt text-amber-500 mr-1.5"></i> Permintaan Langganan Masuk</h2>
+                <div id="request-container" class="space-y-2">
+                    <div class="text-center py-6 text-gray-500 text-xs bg-[#141414] rounded-lg border border-gray-800">
+                        <i class="fa-solid fa-inbox text-lg mb-1 block"></i> Belum ada permintaan pembayaran baru.
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-iklan" class="content-section hidden">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-rectangle-ad text-red-500 mr-1.5"></i> Siaran & Kontrol Iklan Masal</h2>
+                <div class="glass-card p-4 rounded-xl space-y-3">
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Tipe File Iklan:</label>
+                        <div class="flex gap-4">
+                            <label class="inline-flex items-center text-xs cursor-pointer">
+                                <input type="radio" name="ad-type" value="image" checked class="text-red-600 focus:ring-0 mr-1"> Gambar (.jpg, .png, .gif)
+                            </label>
+                            <label class="inline-flex items-center text-xs cursor-pointer">
+                                <input type="radio" name="ad-type" value="video" class="text-red-600 focus:ring-0 mr-1"> Video (.mp4)
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Nama File Iklan (Di folder iklan/):</label>
+                        <input type="text" id="ad-filename" placeholder="Contoh: iklan1.mp4 atau banner.png" class="w-full bg-[#1c1c1c] border border-gray-800 rounded-lg p-2.5 text-xs text-white placeholder-gray-600 outline-none focus:border-red-600 font-mono">
+                    </div>
+                    <div class="pt-1 flex gap-2">
+                        <button onclick="publishAd(true)" class="flex-1 bg-netflix-red text-white text-xs font-bold py-2.5 rounded-lg transition-all active:scale-95 shadow-md">
+                            <i class="fa-solid fa-bullhorn mr-1"></i> Tayangkan Iklan Sekarang
+                        </button>
+                        <button onclick="publishAd(false)" class="bg-[#262626] hover:bg-[#333] text-gray-300 text-xs font-semibold px-4 py-2.5 rounded-lg transition-all">
+                            Matikan Iklan
+                        </button>
+                    </div>
+                    <div id="ad-status-indicator" class="text-[10px] text-gray-500 text-center mt-1">Status Iklan Saat Ini: <span class="font-bold text-gray-400">Tidak Ada</span></div>
+                </div>
+            </section>
+
+            <section id="sec-media" class="content-section hidden">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-photo-film text-blue-500 mr-1.5"></i> Manajemen QRIS & Latar Konten</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <h3 class="text-xs font-bold text-gray-200 border-b border-gray-800 pb-1.5"><i class="fa-solid fa-qrcode mr-1"></i> QRIS Pembayaran</h3>
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1">Upload File QRIS (Dari Perangkat):</label>
+                            <input type="file" id="qris-uploader" accept="image/*" class="w-full text-[11px] text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                        </div>
+                        <button onclick="uploadQrisAsset()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold py-2 rounded transition-all active:scale-95">Perbarui QRIS</button>
+                        <div class="text-center pt-2">
+                            <img id="admin-qris-preview" src="https://via.placeholder.com/120?text=QRIS+Kosong" alt="Preview QRIS" class="w-24 h-24 object-contain mx-auto bg-white p-1 rounded">
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl space-y-3">
+                        <h3 class="text-xs font-bold text-gray-200 border-b border-gray-800 pb-1.5"><i class="fa-solid fa-image mr-1"></i> Gambar Thumbnail Konten</h3>
+                        <div>
+                            <label class="text-[10px] text-gray-400 block mb-1">Nama File Gambar Thumbnail (Satu Folder):</label>
+                            <input type="text" id="thumb-filename" placeholder="Contoh: gambar1.jpg atau background.png" class="w-full bg-[#1c1c1c] border border-gray-800 rounded-lg p-2 text-xs text-white placeholder-gray-600 outline-none focus:border-purple-600 font-mono">
+                        </div>
+                        <button onclick="updateThumbnailFilename()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold py-2 rounded transition-all active:scale-95">Perbarui Nama Thumbnail</button>
+                        <div class="text-center pt-2">
+                            <p class="text-[10px] text-gray-500 mb-1">Nama File Thumbnail Aktif:</p>
+                            <div id="admin-thumb-preview" class="text-xs font-mono text-purple-400 font-bold bg-[#141414] p-2 rounded border border-gray-800 truncate text-center">Belum Ada</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-users" class="content-section hidden">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fa-solid fa-users text-emerald-500 mr-1.5"></i> Manajemen & Evaluasi Database Pengguna</h2>
+                <div class="bg-[#141414] border border-gray-800 rounded-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-[#202020] text-gray-400 font-semibold border-b border-gray-800">
+                                <tr>
+                                    <th class="p-3">Nomor WhatsApp</th>
+                                    <th class="p-3 text-center" style="width: 120px;">Sisa Hari</th>
+                                    <th class="p-3 text-center" style="width: 160px;">Ketik Sisa Hari Baru</th>
+                                    <th class="p-3 text-center">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body" class="divide-y divide-gray-800/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <nav class="fixed bottom-0 inset-x-0 bg-[#141414] border-t border-gray-800 z-40 px-2 shadow-2xl">
+            <div class="max-w-md mx-auto flex justify-between items-center text-center">
+                <button onclick="switchTab('sec-pembayaran', this)" class="nav-item flex-1 py-3 text-red-500 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-receipt text-lg block mb-0.5"></i>
+                    <span class="text-[10px] font-medium block">Konfirmasi</span>
+                </button>
+                <button onclick="switchTab('sec-iklan', this)" class="nav-item flex-1 py-3 text-gray-500 hover:text-red-500 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-rectangle-ad text-lg block mb-0.5"></i>
+                    <span class="text-[10px] font-medium block">Iklan</span>
+                </button>
+                <button onclick="switchTab('sec-media', this)" class="nav-item flex-1 py-3 text-gray-500 hover:text-red-500 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-photo-film text-lg block mb-0.5"></i>
+                    <span class="text-[10px] font-medium block">QRIS & Cover</span>
+                </button>
+                <button onclick="switchTab('sec-users', this)" class="nav-item flex-1 py-3 text-gray-500 hover:text-red-500 transition-colors cursor-pointer">
+                    <i class="fa-solid fa-users text-lg block mb-0.5"></i>
+                    <span class="text-[10px] font-medium block">Pengguna</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <div id="proof-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/95 p-4">
+        <button onclick="closeProofModal()" class="absolute top-4 right-4 w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center border border-white font-bold text-lg shadow-xl cursor-pointer">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-sm w-full bg-white p-2 rounded-xl shadow-2xl">
+            <img id="modal-proof-img" src="" alt="Bukti Transfer" class="w-full h-auto max-h-[75vh] object-contain rounded-lg">
+        </div>
+    </div>
+
+    <script>
+        // Logika verifikasi PIN Pengunci Akses Panel Kontrol
+        function validateAdminPin() {
+            const pinInput = document.getElementById('admin-pin-input').value.trim();
+            
+            if (pinInput === globalSecureAdminPin) {
+                // Sembunyikan layar lock screen dan munculkan dashboard kontrol utama
+                document.getElementById('pin-lock-screen').classList.add('hidden');
+                document.getElementById('admin-main-content').classList.remove('hidden');
+                
+                // Nyalakan mesin pencatat database
+                listenPaymentRequests();
+                listenAdminSettings();
+                listenActiveUsers();
+            } else {
+                alert("PIN salah! Akses panel admin ditolak.");
+                document.getElementById('admin-pin-input').value = "";
+            }
+        }
+
+        // Jalankan trigger otomatis jika admin menekan tombol 'Enter' pada keyboard saat mengetik PIN
+        document.getElementById('admin-pin-input').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') validateAdminPin();
+        });
+
+        function switchTab(sectionId, element) {
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('text-red-500');
+                item.classList.add('text-gray-500');
+            });
+            element.classList.remove('text-gray-500');
+            element.classList.add('text-red-500');
+        }
+
+        function listenPaymentRequests() {
+            db.ref('paymentRequests').on('value', snapshot => {
+                const container = document.getElementById('request-container');
+                container.innerHTML = "";
+                let hasPending = false;
+
+                snapshot.forEach(child => {
+                    const req = child.val();
+                    if(req && req.status === "pending") {
+                        hasPending = true;
+                        const reqCard = document.createElement('div');
+                        reqCard.className = "bg-[#181818] p-3 rounded-lg border border-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3";
+                        reqCard.innerHTML = `
+                            <div>
+                                <div class="text-sm font-bold text-white">0${req.whatsapp ? req.whatsapp.substring(2) : 'Unknown'}</div>
+                                <div class="text-[11px] text-gray-400">Permintaan: <span class="text-green-400 font-semibold">${req.daysRequested || 0} Hari</span></div>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                <button onclick="openProofModal('${req.proofImage}')" class="bg-[#2a2a2a] text-gray-200 text-xs px-2.5 py-1.5 rounded-md border border-gray-700 hover:bg-[#333] cursor-pointer">
+                                    <i class="fa-solid fa-image mr-1"></i> Bukti
+                                </button>
+                                <button onclick="approvePayment('${req.id}', '${req.whatsapp}', ${req.daysRequested})" class="bg-green-600 text-white font-bold text-xs px-3 py-1.5 rounded-md hover:bg-green-700 cursor-pointer">
+                                    Terima
+                                </button>
+                                <button onclick="rejectPayment('${req.id}')" class="bg-red-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-md hover:bg-red-700 cursor-pointer">
+                                    Tolak
+                                </button>
+                            </div>
+                        `;
+                        container.appendChild(reqCard);
+                    }
+                });
+
+                if(!hasPending) {
+                    container.innerHTML = `
+                        <div class="text-center py-6 text-gray-500 text-xs bg-[#141414] rounded-lg border border-gray-800">
+                            <i class="fa-solid fa-inbox text-lg mb-1 block"></i> Belum ada permintaan pembayaran baru.
+                        </div>`;
+                }
+            });
+        }
+
+        function approvePayment(requestId, whatsappNum, days) {
+            db.ref('users/' + whatsappNum).once('value', snapshot => {
+                const userData = snapshot.val();
+                let currentDaysLeft = (userData && userData.daysLeft) ? parseInt(userData.daysLeft) : 0;
+                let newDaysLeft = currentDaysLeft + parseInt(days);
+
+                db.ref('users/' + whatsappNum).update({
+                    whatsapp: whatsappNum,
+                    status: "active",
+                    daysLeft: newDaysLeft
+                }).then(() => {
+                    db.ref('paymentRequests/' + requestId).update({ status: "approved" });
+                    alert("Pembayaran pengguna berhasil dikonfirmasi!");
+                });
+            });
+        }
+
+        function rejectPayment(requestId) {
+            if(confirm("Apakah Anda yakin ingin menolak kiriman bukti transfer ini?")) {
+                db.ref('paymentRequests/' + requestId).update({ status: "rejected" });
+            }
+        }
+
+        function publishAd(activate) {
+            if(!activate) {
+                db.ref('adminSettings/currentAd').set({ active: false, timestamp: firebase.database.ServerValue.TIMESTAMP });
+                alert("Siaran iklan dinonaktifkan.");
+                return;
+            }
+
+            let fileName = document.getElementById('ad-filename').value.trim();
+            const fileType = document.querySelector('input[name="ad-type"]:checked').value;
+
+            if(!fileName) return alert("Masukkan nama file iklan terlebih dahulu!");
+            fileName = fileName.replace(/^.*[\\\/]/, '');
+
+            db.ref('adminSettings/currentAd').set({
+                active: true,
+                type: fileType,
+                url: fileName,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                alert("Iklan berhasil di-broadcast ke seluruh pemutar user!");
+            });
+        }
+
+        function listenAdminSettings() {
+            db.ref('adminSettings').on('value', snapshot => {
+                const settings = snapshot.val();
+                if(settings) {
+                    if(settings.qrisUrl) document.getElementById('admin-qris-preview').src = settings.qrisUrl;
+                    if(settings.thumbnailUrl) {
+                        document.getElementById('admin-thumb-preview').innerText = settings.thumbnailUrl.replace('./', '');
+                    } else {
+                        document.getElementById('admin-thumb-preview').innerText = "Belum Ada";
+                    }
+                    
+                    if(settings.currentAd) {
+                        const ad = settings.currentAd;
+                        const indicator = document.getElementById('ad-status-indicator');
+                        if(ad.active) {
+                            indicator.innerHTML = `Status Iklan Saat Ini: <span class="font-bold text-green-400">AKTIF (${ad.type.toUpperCase()}: ${ad.url})</span>`;
+                        } else {
+                            indicator.innerHTML = `Status Iklan Saat Ini: <span class="font-bold text-gray-500">Tidak Ada</span>`;
+                        }
+                    }
+                }
+            });
+        }
+
+        function uploadQrisAsset() {
+            const fileInput = document.getElementById('qris-uploader');
+            if(fileInput.files.length === 0) return alert("Silakan tentukan file gambar QRIS terlebih dahulu!");
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function() {
+                db.ref('adminSettings').update({
+                    qrisUrl: reader.result
+                }).then(() => {
+                    alert("Gambar QRIS Pembayaran berhasil diperbarui!");
+                    fileInput.value = "";
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateThumbnailFilename() {
+            let fileName = document.getElementById('thumb-filename').value.trim();
+            if(!fileName) return alert("Ketikkan nama file gambar thumbnail Anda!");
+
+            fileName = fileName.replace(/^.*[\\\/]/, '');
+            const finalPath = './' + fileName;
+
+            db.ref('adminSettings').update({
+                thumbnailUrl: finalPath
+            }).then(() => {
+                alert("Nama file thumbnail latar belakang berhasil diperbarui secara real-time!");
+                document.getElementById('thumb-filename').value = "";
+            }).catch(err => alert("Gagal memperbarui database: " + err.message));
+        }
+
+        function listenActiveUsers() {
+            db.ref('users').on('value', snapshot => {
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = "";
+
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500 text-xs">Belum ada data akun terdaftar di database.</td></tr>`;
+                    return;
+                }
+
+                snapshot.forEach(child => {
+                    const key = child.key; 
+                    const user = child.val();
+                    
+                    const currentDays = (user && user.daysLeft !== undefined) ? parseInt(user.daysLeft) : 0;
+                    const displayPhone = (user && user.whatsapp) ? "0" + user.whatsapp.substring(2) : "Data Error (" + key + ")";
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-white/[0.02]";
+                    tr.innerHTML = `
+                        <td class="p-3 font-mono font-medium text-gray-200">${displayPhone}</td>
+                        <td class="p-3 text-center text-gray-400 font-bold text-sm"><span class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">${currentDays} H</span></td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <input type="number" id="input-days-${key}" value="${currentDays}" min="0" placeholder="Hari" class="w-16 bg-[#1c1c1c] border border-gray-800 rounded px-1.5 py-1 text-center font-bold text-xs text-white focus:border-emerald-600 outline-none">
+                                <button onclick="saveUserDaysDirect('${key}')" class="bg-emerald-600 text-white font-bold text-[10px] px-2 py-1 rounded hover:bg-emerald-700 transition-all cursor-pointer">
+                                    Simpan
+                                </button>
+                            </div>
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="purgeUserNode('${key}')" class="text-[10px] bg-red-600/10 text-red-500 border border-red-500/20 px-2 py-1 rounded hover:bg-red-600 hover:text-white transition-colors cursor-pointer font-semibold">
+                                <i class="fa-solid fa-trash-can mr-1"></i> Hapus Akun
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function saveUserDaysDirect(whatsappKey) {
+            const inputElement = document.getElementById(`input-days-${whatsappKey}`);
+            const inputVal = parseInt(inputElement.value);
+
+            if (isNaN(inputVal) || inputVal < 0) {
+                return alert("Masukkan angka jumlah hari yang valid (minimal 0)!");
+            }
+
+            const finalStatus = inputVal > 0 ? "active" : "expired";
+
+            db.ref('users/' + whatsappKey).update({
+                whatsapp: whatsappKey,
+                daysLeft: inputVal,
+                status: finalStatus
+            }).then(() => {
+                alert(`Masa aktif akun 0${whatsappKey.substring(2)} berhasil disetel menjadi ${inputVal} Hari!`);
+            }).catch(err => alert("Gagal menyimpan perubahan: " + err.message));
+        }
+
+        function purgeUserNode(whatsappKey) {
+            if(confirm(`PERINGATAN KETAT!\nApakah Anda yakin ingin menghapus data akun dengan ID: [${whatsappKey}] secara permanen?\n\nSistem akan membersihkan seluruh simpul data dari database tanpa sisa.`)) {
+                db.ref('users/' + whatsappKey).remove()
+                    .then(() => alert("Data akun telah dibersihkan sepenuhnya dari server database!"))
+                    .catch(err => alert("Gagal membersihkan data node: " + err.message));
+            }
+        }
+
+        function openProofModal(imgBase64) {
+            document.getElementById('modal-proof-img').src = imgBase64;
+            document.getElementById('proof-modal').classList.remove('hidden');
+        }
+
+        function closeProofModal() {
+            document.getElementById('proof-modal').classList.add('hidden');
+        }
+    </script>
+
+    <script>
+        const globalSecureAdminPin = "220402"; 
+    </script>
+</body>
+</html>
